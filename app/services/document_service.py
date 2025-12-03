@@ -37,8 +37,10 @@ class DocumentService:
             List of Document objects with page content
         """
         try:
+            print(f"Loading PDF from: {file_path}")
             loader = PyPDFLoader(file_path)
             documents = loader.load()
+            print(f"Loaded {len(documents)} pages from PDF")
             return documents
         except Exception as e:
             raise ValueError(f"Error loading PDF: {str(e)}")
@@ -61,7 +63,9 @@ class DocumentService:
         chunks = []
         
         # Split documents into chunks
+        print("Splitting documents into chunks...")
         text_chunks = self.text_splitter.split_documents(documents)
+        print(f"Created {len(text_chunks)} chunks")
         
         for idx, chunk in enumerate(text_chunks):
             # Extract page number from metadata if available

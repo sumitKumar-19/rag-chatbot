@@ -38,6 +38,7 @@ class VectorStoreService:
     def add_documents(self, chunks: List[DocumentChunk]) -> List[str]:
         """
         Add document chunks to the vector store.
+        ChromaDB will automatically generate embeddings using the embedding function.
         
         Args:
             chunks: List of DocumentChunk objects
@@ -45,17 +46,14 @@ class VectorStoreService:
         Returns:
             List of document IDs created
         """
+        print(f"Processing {len(chunks)} chunks for vector store...")
+        
         # Convert DocumentChunks to LangChain Documents
+        # ChromaDB will automatically generate embeddings using the embedding_function
         documents = []
-        metadatas = []
         ids = []
         
-        for chunk in chunks:
-            # Generate embedding if not already present
-            if chunk.embedding is None:
-                embedding = self.embedding_service.embed_text(chunk.content)
-                chunk.embedding = embedding
-            
+        for idx, chunk in enumerate(chunks):
             # Create LangChain Document
             doc = Document(
                 page_content=chunk.content,
@@ -72,12 +70,21 @@ class VectorStoreService:
             # Generate unique ID
             doc_id = str(uuid.uuid4())
             ids.append(doc_id)
+            
+            # Progress indicator for large documents
+            if (idx + 1) % 10 == 0:
+                print(f"  Processed {idx + 1}/{len(chunks)} chunks...")
         
-        # Add to vector store
+        print(f"Adding {len(documents)} documents to vector store (generating embeddings)...")
+        
+        # Add to vector store - ChromaDB will automatically generate embeddings
+        # This is much faster than generating embeddings one by one
         self.vectorstore.add_documents(
             documents=documents,
             ids=ids
         )
+        
+        print(f"Successfully added {len(ids)} documents to vector store!")
         
         return ids
     

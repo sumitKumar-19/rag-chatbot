@@ -54,26 +54,35 @@ async def upload_document(
         )
     
     try:
+        print(f"Starting upload for file: {file.filename}")
+        
         # Read file content
         file_content = await file.read()
+        print(f"File read: {len(file_content)} bytes")
         
         # Save file
         file_path = document_service.save_uploaded_file(
             file_content,
             file.filename
         )
+        print(f"File saved to: {file_path}")
         
         # Process document (load and chunk)
+        print("Loading and chunking PDF...")
         chunks = document_service.process_uploaded_file(
             file_path,
             file.filename
         )
+        print(f"Created {len(chunks)} chunks from document")
         
-        # Add to vector store
+        # Add to vector store (this will generate embeddings automatically)
+        print("Adding chunks to vector store...")
         document_ids = vector_store.add_documents(chunks)
         
         # Generate document ID
         document_id = str(uuid.uuid4())
+        
+        print(f"Upload complete! Document ID: {document_id}")
         
         return DocumentUploadResponse(
             document_id=document_id,
